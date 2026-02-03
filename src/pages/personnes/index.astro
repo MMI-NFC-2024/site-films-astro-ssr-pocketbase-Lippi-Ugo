@@ -18,4 +18,15 @@ const personnes = await Astro.locals.pb.collection("Personne").getFullList();
             ))
         }
     </div>
+    {Astro.locals.pb.authStore.isValid && (
+        <a 
+            href="/personnes/edit" 
+            class="inline-flex items-center gap-2 mt-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+        >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Ajouter une nouvelle personne
+        </a>
+    )}
 </Layout>
