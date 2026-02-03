@@ -1,0 +1,38 @@
+---
+import type { PersonneRecord } from "../pocketbase-types";
+import ImgPb from "./ImgPb.astro";
+interface Props {
+    personne: PersonneRecord;
+}
+const { personne } = Astro.props;
+---
+
+<a href={`/personnes/${personne.id}`} class="group relative block">
+    <div class="relative overflow-hidden rounded-lg">
+        <div class="aspect-2/3 bg-slate-900">
+            <ImgPb
+                record={personne}
+                field="photo"
+                classPicture="w-full h-full"
+                classImg="w-full h-full object-cover"
+                thumb="400x600"
+            />
+        </div>
+        <div
+            class="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/90 via-black/50 to-transparent p-4 translate-y-2 group-hover:translate-y-0 transition-transform"
+        >
+            <h2 class="font-bold text-white text-sm leading-tight mb-1">
+                {personne.nom}
+            </h2>
+            <p
+                class="text-[11px] text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300 line-clamp-2"
+            >
+                {
+                    personne.profession
+                        ? personne.profession.join(", ") + " · "
+                        : ""
+                }
+            </p>
+        </div>
+    </div>
+</a>

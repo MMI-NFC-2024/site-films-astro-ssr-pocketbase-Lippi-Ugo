@@ -1,0 +1,21 @@
+---
+import LinkPersonne from "../../components/LinkPersonne.astro";
+import Layout from "../../layouts/Layout.astro";
+const personnes = await Astro.locals.pb.collection("Personne").getFullList();
+---
+
+<Layout titre="Artistes">
+    <div class="mb-10">
+        <h1 class="text-4xl font-bold mb-2 text-slate-900">Artistes</h1>
+        <p class="text-slate-600">{personnes.length} personnalités</p>
+    </div>
+    <div
+        class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
+    >
+        {
+            personnes.map((personne) => (
+                <LinkPersonne personne={personne} />
+            ))
+        }
+    </div>
+</Layout>
