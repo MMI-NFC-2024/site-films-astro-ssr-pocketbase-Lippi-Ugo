@@ -1,0 +1,43 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import ImgPb from "../../components/ImgPb.astro";
+export const prerender = false;
+const { id } = Astro.params;
+const film = await Astro.locals.pb.collection("Film").getOne(id);
+---
+
+<Layout titre={film.titre}>
+    <a
+        href="/films"
+        class="inline-flex items-center text-slate-600 hover:text-blue-600 mb-8 transition-colors font-medium"
+    >
+        ← Retour aux films
+    </a>
+    <div class="mb-6">
+        <h1 class="text-4xl font-bold mb-2 text-slate-900">{film.titre}</h1>
+        <p class="text-slate-600 text-sm">
+            {film.genres ? film.genres.join(", ") + " · " : ""}
+        </p>
+    </div>
+    <div class="flex flex-col md:flex-row md:gap-6 mb-10">
+        <div class="w-full md:w-1/3 lg:w-1/4 mb-4 md:mb-0">
+            <ImgPb
+                record={film}
+                field="affiche"
+                classPicture="w-full h-full"
+                classImg="w-full h-auto object-cover rounded-lg"
+                thumb="400x600"
+            />
+        </div>
+    </div>
+    {
+        Astro.locals.pb.authStore.record?.id === film.user && (
+            <a
+                href={`/films/edit/${film.id}`}
+                class="inline-flex items-center gap-2 mt-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+            >
+                Modifier le film
+            </a>
+        )
+    }
+</Layout>
