@@ -6,6 +6,7 @@ import type PocketBase from 'pocketbase'
 import type { RecordService } from 'pocketbase'
 
 export enum Collections {
+	Film = "Film",
 	Personne = "Personne",
 	Authorigins = "_authOrigins",
 	Externalauths = "_externalAuths",
@@ -43,6 +44,31 @@ export type AuthSystemFields<T = unknown> = {
 } & BaseSystemFields<T>
 
 // Record types for each collection
+
+export enum FilmPaysOrigineOptions {
+	"FR" = "FR",
+	"US" = "US",
+}
+
+export enum FilmGenresOptions {
+	"Comédie" = "Comédie",
+	"Romance" = "Romance",
+	"Action" = "Action",
+	"Policier" = "Policier",
+}
+export type FilmRecord = {
+	affiche?: FileNameString
+	created: IsoAutoDateString
+	date_sortie?: IsoDateString
+	duree_min?: number
+	genres?: FilmGenresOptions[]
+	id: string
+	pays_origine?: FilmPaysOrigineOptions
+	synopsis?: string
+	titre?: string
+	updated: IsoAutoDateString
+	user?: RecordIdString
+}
 
 export enum PersonneProfessionOptions {
 	"Acteur" = "Acteur",
@@ -135,6 +161,7 @@ export type UsersRecord = {
 }
 
 // Response types include system fields and match responses from the PocketBase API
+export type FilmResponse<Texpand = unknown> = Required<FilmRecord> & BaseSystemFields<Texpand>
 export type PersonneResponse<Texpand = unknown> = Required<PersonneRecord> & BaseSystemFields<Texpand>
 export type AuthoriginsResponse<Texpand = unknown> = Required<AuthoriginsRecord> & BaseSystemFields<Texpand>
 export type ExternalauthsResponse<Texpand = unknown> = Required<ExternalauthsRecord> & BaseSystemFields<Texpand>
@@ -146,6 +173,7 @@ export type UsersResponse<Texpand = unknown> = Required<UsersRecord> & AuthSyste
 // Types containing all Records and Responses, useful for creating typing helper functions
 
 export type CollectionRecords = {
+	Film: FilmRecord
 	Personne: PersonneRecord
 	_authOrigins: AuthoriginsRecord
 	_externalAuths: ExternalauthsRecord
@@ -156,6 +184,7 @@ export type CollectionRecords = {
 }
 
 export type CollectionResponses = {
+	Film: FilmResponse
 	Personne: PersonneResponse
 	_authOrigins: AuthoriginsResponse
 	_externalAuths: ExternalauthsResponse

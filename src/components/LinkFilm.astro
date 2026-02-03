@@ -1,0 +1,40 @@
+---
+import slug from "slug";
+import type { FilmRecord } from "../pocketbase-types";
+import ImgPb from "./ImgPb.astro";
+import { formatAnnee } from "../helpers";
+interface Props {
+    film: FilmRecord;
+}
+const { film } = Astro.props;
+---
+
+<a
+    href={`/films/${film.id}-${slug(film.titre ?? "Inconnu")}`}
+    class="group relative block"
+>
+    <div class="relative overflow-hidden rounded-lg">
+        <div class="aspect-2/3 bg-slate-900">
+            <ImgPb
+                record={film}
+                field="affiche"
+                classPicture="w-full h-full"
+                classImg="w-full h-full object-cover"
+                thumb="400x600"
+            />
+        </div>
+        <div
+            class="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/90 via-black/50 to-transparent p-4 translate-y-2 group-hover:translate-y-0 transition-transform"
+        >
+            <h2 class="font-bold text-white text-sm leading-tight mb-1">
+                {film.titre}
+            </h2>
+            <p
+                class="text-xs text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            >
+                {film.genres ? film.genres.join(", ") + " · " : ""}
+                {film.date_sortie ? formatAnnee(new Date(film.date_sortie)) : "N/A"}
+            </p>
+        </div>
+    </div>
+</a>
