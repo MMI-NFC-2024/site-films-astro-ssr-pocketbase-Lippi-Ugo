@@ -1,7 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import ImgPb from "../../components/ImgPb.astro";
-export const prerender = false
+export const prerender = false;
 const { id } = Astro.params;
 const personne = await Astro.locals.pb.collection("Personne").getOne(id);
 ---
@@ -10,11 +10,7 @@ const personne = await Astro.locals.pb.collection("Personne").getOne(id);
     <div class="mb-6">
         <h1 class="text-4xl font-bold mb-2 text-slate-900">{personne.nom}</h1>
         <p class="text-slate-600 text-sm">
-            {
-                personne.profession
-                    ? personne.profession.join(", ") + " · "
-                    : ""
-            }
+            {personne.profession ? personne.profession.join(", ") + " · " : ""}
         </p>
     </div>
     <div class="flex flex-col md:flex-row md:gap-6 mb-10">
@@ -28,4 +24,14 @@ const personne = await Astro.locals.pb.collection("Personne").getOne(id);
             />
         </div>
     </div>
+    {
+        Astro.locals.pb.authStore.record?.id === personne.user && (
+            <a
+                href={`/personnes/edit/${personne.id}`}
+                class="inline-flex items-center gap-2 mt-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+            >
+                Modifier la personne
+            </a>
+        )
+    }
 </Layout>

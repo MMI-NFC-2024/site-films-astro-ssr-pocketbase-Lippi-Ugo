@@ -1,0 +1,119 @@
+---
+import slug from "slug";
+import { formatDate } from "../../../helpers";
+import Layout from "../../../layouts/Layout.astro";
+import type { PersonneResponse } from "../../../pocketbase-types";
+import { PersonneNationaliteOptions, PersonneProfessionOptions } from "../../../pocketbase-types";
+const { id } = Astro.params;
+let message = "";
+let personne = {} as PersonneResponse;
+if (id) {
+    personne = await Astro.locals.pb.collection("Personne").getOne(id);
+}
+if (Astro.request.method === "POST") {
+    const data = await Astro.request.formData();
+    const personneCree = await (id
+        ? Astro.locals.pb.collection("Personne").update(id!, data)
+        : Astro.locals.pb
+              .collection("Personne")
+              .create(data)
+              .catch((error) => {
+                  console.error(
+                      "Erreur lors de la création de l'artiste :",
+                      error,
+                  );
+                  message = error.message;
+              }));
+    if (personneCree) {
+        return Astro.redirect(
+            `/personnes/${personneCree.id}-${slug(personneCree.nom ?? "Inconnu")}`,
+        );
+    }
+}
+---
+
+<Layout titre="Édition d'un artiste">
+    <h1>Ajouter un nouvel artiste</h1>
+    {message && <p class="text-red-600">{message}</p>}
+    <form method="post">
+        {id && <input name="id" type="hidden" value={id} />}
+        <input
+            name="user"
+            type="hidden"
+            value={Astro.locals.pb.authStore.record?.id}
+        />
+        <label class="block">
+            <span class="text-gray-700">Nom :</span>
+            <input
+                name="nom"
+                type="text"
+                class="mt-1 block w-full"
+                placeholder=""
+                value={personne.nom}
+            />
+        </label>
+        <label class="block">
+            <span class="text-gray-700">Prénom :</span>
+            <input
+                name="prenom"
+                type="text"
+                class="mt-1 block w-full"
+                placeholder=""
+                value={personne.prenom}
+            />
+        </label>
+        <label class="block">
+            <span class="text-gray-700">Date de naissance :</span>
+            <input
+                name="date_naissance"
+                type="date"
+                class="mt-1 block w-full"
+                placeholder=""
+                value={formatDate(personne.date_naissance)}
+            />
+        </label>
+        <label class="block">
+            <span class="text-gray-700">Date de décès :</span>
+            <input
+                name="date_deces"
+                type="date"
+                class="mt-1 block w-full"
+                placeholder=""
+                value={formatDate(personne.date_deces)}
+            />
+        </label>
+        <fieldset>
+            <legend class="text-gray-700">Profession :</legend>
+            {
+                Object.entries(PersonneProfessionOptions).map(([key, value]) => (
+                    <label class="inline-block mr-4">
+                        <input type="checkbox" name="profession" value={value} checked={personne.profession?.includes(value)}/>
+                        {key}
+                    </label>
+                ))
+            }
+        </fieldset>
+        <!-- <label class="block">
+            <span class="text-gray-700">Photo :</span>
+            <input name="photo" type="" class="mt-1 block w-full" placeholder="">
+        </label> -->
+        <label class="block">
+            <span class="text-gray-700">Nationalite :</span>
+            <select name="nationalite" class="mt-1 block">
+                <option>
+                    Choisir une nationalité
+                </option>
+                {
+                    Object.entries(PersonneNationaliteOptions).map(([key, value]) => (
+                        <option selected={personne.nationalite === key} value={key} >{value}</option>
+                    ))
+                }
+            </select>
+        </label>
+        <button
+            type="submit"
+            class="inline-flex items-center gap-2 mt-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+            >{id ? "Mettre à jour" : "Ajouter"}</button
+        >
+    </form>
+</Layout>
