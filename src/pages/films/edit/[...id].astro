@@ -1,0 +1,129 @@
+---
+import slug from "slug";
+import { formatDate } from "../../../helpers";
+import Layout from "../../../layouts/Layout.astro";
+import type { FilmResponse } from "../../../pocketbase-types";
+import {
+    FilmPaysOrigineOptions,
+    FilmGenresOptions,
+} from "../../../pocketbase-types";
+const { id } = Astro.params;
+let message = "";
+let film = {} as FilmResponse;
+if (id) {
+    film = await Astro.locals.pb.collection("Film").getOne(id);
+}
+if (Astro.request.method === "POST") {
+    const data = await Astro.request.formData();
+    const filmCree = await (id
+        ? Astro.locals.pb.collection("Film").update(id!, data)
+        : Astro.locals.pb
+              .collection("Film")
+              .create(data)
+              .catch((error) => {
+                  console.error("Erreur lors de la création du film :", error);
+                  message = error.message;
+              }));
+    if (filmCree) {
+        return Astro.redirect(
+            `/films/${filmCree.id}-${slug(filmCree.titre ?? "Inconnu")}`,
+        );
+    }
+}
+---
+
+<Layout titre="Édition d'un artiste">
+    <h1>Ajouter un nouveau film</h1>
+    {message && <p class="text-red-600">{message}</p>}
+    <form method="post">
+        {id && <input name="id" type="hidden" value={id} />}
+        <input
+            name="user"
+            type="hidden"
+            value={Astro.locals.pb.authStore.record?.id}
+        />
+        <label class="block">
+            <span class="text-gray-700">Titre :</span>
+            <input
+                name="titre"
+                type="text"
+                class="mt-1 block w-full"
+                placeholder=""
+                value={film.titre}
+            />
+        </label>
+        <label class="block">
+            <span class="text-gray-700">Synopsis</span>
+            <input
+                name="synopsis"
+                type="text"
+                class="mt-1 block w-full"
+                placeholder=""
+                value={film.synopsis}
+            />
+        </label>
+        <label class="block">
+            <span class="text-gray-700">Date de sortie :</span>
+            <input
+                name="date_sortie"
+                type="date"
+                class="mt-1 block w-full"
+                placeholder=""
+                value={formatDate(film.date_sortie)}
+            />
+        </label>
+        <label class="block">
+            <span class="text-gray-700">Durée (min) :</span>
+            <input
+                name="duree_min"
+                type="number"
+                class="mt-1 block w-full"
+                placeholder=""
+                value={film.duree_min}
+            />
+        </label>
+        <fieldset>
+            <legend class="text-gray-700">Genres :</legend>
+            {
+                Object.entries(FilmGenresOptions).map(([key, value]) => (
+                    <label class="inline-block mr-4">
+                        <input
+                            type="checkbox"
+                            name="genres"
+                            value={value}
+                            checked={film.genres?.includes(value)}
+                        />
+                        {key}
+                    </label>
+                ))
+            }
+        </fieldset>
+        <!-- <label class="block">
+            <span class="text-gray-700">Photo :</span>
+            <input name="photo" type="" class="mt-1 block w-full" placeholder="">
+        </label> -->
+        <label class="block">
+            <span class="text-gray-700">Pays d'origine :</span>
+            <select name="pays_origine" class="mt-1 block">
+                <option> Choisir une nationalité </option>
+                {
+                    Object.entries(FilmPaysOrigineOptions).map(
+                        ([key, value]) => (
+                            <option
+                                selected={film.pays_origine === key}
+                                value={key}
+                            >
+                                {value}
+                            </option>
+                        ),
+                    )
+                }
+            </select>
+        </label>
+        <button
+            type="submit"
+            class="inline-flex items-center gap-2 mt-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+            >{id ? "Mettre à jour" : "Ajouter"}</button
+        >
+    </form>
+</Layout>

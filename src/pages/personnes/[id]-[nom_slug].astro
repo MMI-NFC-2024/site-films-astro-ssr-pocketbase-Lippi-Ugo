@@ -7,8 +7,16 @@ const personne = await Astro.locals.pb.collection("Personne").getOne(id);
 ---
 
 <Layout titre={personne.nom}>
+    <a
+        href="/personnes"
+        class="inline-flex items-center text-slate-600 hover:text-blue-600 mb-8 transition-colors font-medium"
+    >
+        ← Retour aux artistes
+    </a>
     <div class="mb-6">
-        <h1 class="text-4xl font-bold mb-2 text-slate-900">{personne.nom}</h1>
+        <h1 class="text-4xl font-bold mb-2 text-slate-900">
+            {personne.prenom}{personne.nom}
+        </h1>
         <p class="text-slate-600 text-sm">
             {personne.profession ? personne.profession.join(", ") + " · " : ""}
         </p>
