@@ -32,6 +32,9 @@ const { personne } = Astro.props;
                         ? personne.profession.join(", ") + " · "
                         : ""
                 }
+                {
+                    personne.nationalite
+                }
             </p>
         </div>
     </div>
