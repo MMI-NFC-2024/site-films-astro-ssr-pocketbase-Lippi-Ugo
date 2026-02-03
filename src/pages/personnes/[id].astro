@@ -1,0 +1,31 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import ImgPb from "../../components/ImgPb.astro";
+export const prerender = false
+const { id } = Astro.params;
+const personne = await Astro.locals.pb.collection("Personne").getOne(id);
+---
+
+<Layout titre={personne.nom}>
+    <div class="mb-6">
+        <h1 class="text-4xl font-bold mb-2 text-slate-900">{personne.nom}</h1>
+        <p class="text-slate-600 text-sm">
+            {
+                personne.profession
+                    ? personne.profession.join(", ") + " · "
+                    : ""
+            }
+        </p>
+    </div>
+    <div class="flex flex-col md:flex-row md:gap-6 mb-10">
+        <div class="w-full md:w-1/3 lg:w-1/4 mb-4 md:mb-0">
+            <ImgPb
+                record={personne}
+                field="photo"
+                classPicture="w-full h-full"
+                classImg="w-full h-auto object-cover rounded-lg"
+                thumb="400x600"
+            />
+        </div>
+    </div>
+</Layout>
