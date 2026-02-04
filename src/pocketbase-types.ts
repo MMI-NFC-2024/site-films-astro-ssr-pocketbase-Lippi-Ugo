@@ -64,6 +64,9 @@ export type FilmRecord = {
 	genres?: FilmGenresOptions[]
 	id: string
 	pays_origine?: FilmPaysOrigineOptions
+	producteur?: RecordIdString[]
+	realisateur?: RecordIdString
+	scenariste?: RecordIdString[]
 	synopsis?: string
 	titre?: string
 	updated: IsoAutoDateString
