@@ -8,6 +8,7 @@ import type { RecordService } from 'pocketbase'
 export enum Collections {
 	Film = "Film",
 	Personne = "Personne",
+	Role = "Role",
 	Authorigins = "_authOrigins",
 	Externalauths = "_externalAuths",
 	Mfas = "_mfas",
@@ -66,6 +67,7 @@ export type FilmRecord = {
 	pays_origine?: FilmPaysOrigineOptions
 	producteur?: RecordIdString[]
 	realisateur?: RecordIdString
+	role?: RecordIdString[]
 	scenariste?: RecordIdString[]
 	synopsis?: string
 	titre?: string
@@ -99,6 +101,15 @@ export type PersonneRecord = {
 	profession?: PersonneProfessionOptions[]
 	updated: IsoAutoDateString
 	user: RecordIdString
+}
+
+export type RoleRecord = {
+	acteur?: RecordIdString
+	created: IsoAutoDateString
+	id: string
+	nom?: string
+	updated: IsoAutoDateString
+	user?: RecordIdString
 }
 
 export type AuthoriginsRecord = {
@@ -166,6 +177,7 @@ export type UsersRecord = {
 // Response types include system fields and match responses from the PocketBase API
 export type FilmResponse<Texpand = unknown> = Required<FilmRecord> & BaseSystemFields<Texpand>
 export type PersonneResponse<Texpand = unknown> = Required<PersonneRecord> & BaseSystemFields<Texpand>
+export type RoleResponse<Texpand = unknown> = Required<RoleRecord> & BaseSystemFields<Texpand>
 export type AuthoriginsResponse<Texpand = unknown> = Required<AuthoriginsRecord> & BaseSystemFields<Texpand>
 export type ExternalauthsResponse<Texpand = unknown> = Required<ExternalauthsRecord> & BaseSystemFields<Texpand>
 export type MfasResponse<Texpand = unknown> = Required<MfasRecord> & BaseSystemFields<Texpand>
@@ -178,6 +190,7 @@ export type UsersResponse<Texpand = unknown> = Required<UsersRecord> & AuthSyste
 export type CollectionRecords = {
 	Film: FilmRecord
 	Personne: PersonneRecord
+	Role: RoleRecord
 	_authOrigins: AuthoriginsRecord
 	_externalAuths: ExternalauthsRecord
 	_mfas: MfasRecord
@@ -189,6 +202,7 @@ export type CollectionRecords = {
 export type CollectionResponses = {
 	Film: FilmResponse
 	Personne: PersonneResponse
+	Role: RoleResponse
 	_authOrigins: AuthoriginsResponse
 	_externalAuths: ExternalauthsResponse
 	_mfas: MfasResponse
