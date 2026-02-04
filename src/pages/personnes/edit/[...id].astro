@@ -33,7 +33,7 @@ if (Astro.request.method === "POST") {
 ---
 
 <Layout titre="Édition d'un artiste">
-    <h1>Ajouter un nouvel artiste</h1>
+    <h1 class="text-4xl font-bold mb-12 text-slate-900">Ajouter un nouvel artiste</h1>
     {message && <p class="text-red-600">{message}</p>}
     <form method="post">
         {id && <input name="id" type="hidden" value={id} />}
@@ -82,7 +82,7 @@ if (Astro.request.method === "POST") {
                 value={formatDate(personne.date_deces)}
             />
         </label>
-        <fieldset>
+        <fieldset class="block">
             <legend class="text-gray-700">Profession :</legend>
             {
                 Object.entries(PersonneProfessionOptions).map(([key, value]) => (
