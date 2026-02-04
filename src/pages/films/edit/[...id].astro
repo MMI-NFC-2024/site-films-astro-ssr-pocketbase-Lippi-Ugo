@@ -8,6 +8,11 @@ import {
     FilmGenresOptions,
 } from "../../../pocketbase-types";
 const { id } = Astro.params;
+const personnesList = await Astro.locals.pb
+    .collection("Personne")
+    .getFullList({
+        sort: "nom",
+    });
 let message = "";
 let film = {} as FilmResponse;
 if (id) {
@@ -32,17 +37,17 @@ if (Astro.request.method === "POST") {
 }
 ---
 
-<Layout titre="Édition d'un artiste">
-    <h1>Ajouter un nouveau film</h1>
+<Layout titre="Édition d'un film">
+    <h1 class="text-4xl mb-12 text-gray-900">Ajouter un nouveau film</h1>
     {message && <p class="text-red-600">{message}</p>}
-    <form method="post">
+    <form method="post" class="*:contents grid grid-cols-[10rem_1fr]">
         {id && <input name="id" type="hidden" value={id} />}
         <input
             name="user"
             type="hidden"
             value={Astro.locals.pb.authStore.record?.id}
         />
-        <label class="block">
+        <label>
             <span class="text-gray-700">Titre :</span>
             <input
                 name="titre"
@@ -52,7 +57,7 @@ if (Astro.request.method === "POST") {
                 value={film.titre}
             />
         </label>
-        <label class="block">
+        <label>
             <span class="text-gray-700">Synopsis</span>
             <input
                 name="synopsis"
@@ -62,7 +67,7 @@ if (Astro.request.method === "POST") {
                 value={film.synopsis}
             />
         </label>
-        <label class="block">
+        <label>
             <span class="text-gray-700">Date de sortie :</span>
             <input
                 name="date_sortie"
@@ -72,7 +77,7 @@ if (Astro.request.method === "POST") {
                 value={formatDate(film.date_sortie)}
             />
         </label>
-        <label class="block">
+        <label>
             <span class="text-gray-700">Durée (min) :</span>
             <input
                 name="duree_min"
@@ -82,7 +87,7 @@ if (Astro.request.method === "POST") {
                 value={film.duree_min}
             />
         </label>
-        <fieldset>
+        <fieldset class="col-span-2 block!">
             <legend class="text-gray-700">Genres :</legend>
             {
                 Object.entries(FilmGenresOptions).map(([key, value]) => (
@@ -102,10 +107,10 @@ if (Astro.request.method === "POST") {
             <span class="text-gray-700">Photo :</span>
             <input name="photo" type="" class="mt-1 block w-full" placeholder="">
         </label> -->
-        <label class="block">
+        <label>
             <span class="text-gray-700">Pays d'origine :</span>
             <select name="pays_origine" class="mt-1 block">
-                <option> Choisir une nationalité </option>
+                <option> Choisir un pays d'origine </option>
                 {
                     Object.entries(FilmPaysOrigineOptions).map(
                         ([key, value]) => (
@@ -120,9 +125,45 @@ if (Astro.request.method === "POST") {
                 }
             </select>
         </label>
+        <label>
+            <span class="text-gray-700">Réalisateur :</span>
+            <select name="realisateur" class="mt-1 block">
+                <option> Choisir un réalisateur </option>
+                {
+                    personnesList.map(
+                        ({nom,prenom,id}) => (
+                            <option
+                                selected={film.realisateur === id}
+                                value={id}
+                            >
+                                {nom} {prenom}
+                            </option>
+                        ),
+                    )
+                }
+            </select>
+        </label>
+        <label>
+            <span class="text-gray-700">Producteur(s) :</span>
+            <select name="producteur" class="mt-1 block" multiple>
+                <option> Choisir des producteurs </option>
+                {
+                    personnesList.map(
+                        ({nom,prenom,id}) => (
+                            <option
+                                selected={film.producteur?.includes(id)}
+                                value={id}
+                            >
+                                {nom} {prenom}
+                            </option>
+                        ),
+                    )
+                }
+            </select>
+        </label>
         <button
             type="submit"
-            class="inline-flex items-center gap-2 mt-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+            class="items-center gap-2 mt-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all block!"
             >{id ? "Mettre à jour" : "Ajouter"}</button
         >
     </form>
