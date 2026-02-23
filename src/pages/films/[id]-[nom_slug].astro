@@ -18,18 +18,6 @@ const film = await Astro.locals.pb.collection("Film").getOne<
 >(id, {
     expand: "realisateur,producteur,scenariste",
 });
-
-// Récupérer les rôles séparément avec expand pour les acteurs
-const roles = film.role && film.role.length > 0
-    ? await Astro.locals.pb.collection("Role").getFullList<
-          RoleResponse<{
-              acteur: PersonneResponse;
-          }>
-      >({
-          filter: film.role.map(roleId => `id="${roleId}"`).join(" || "),
-          expand: "acteur",
-      })
-    : [];
 ---
 
 <Layout titre={film.titre}>
@@ -151,26 +139,6 @@ const roles = film.role && film.role.length > 0
                         </div>
                     )}
                 </div>
-
-                {roles && roles.length > 0 && (
-                    <div class="bg-white p-5 rounded-lg shadow-md border border-slate-200 mb-10">
-                        <p class="text-slate-500 text-xs uppercase tracking-wide mb-2">
-                            Distribution
-                        </p>
-                        <ul class="text-slate-900 font-medium space-y-1">
-                            {roles.map((role) => (
-                                <li>
-                                    {role.expand?.acteur && (
-                                        <>
-                                            <LinkPersonneSimple personne={role.expand.acteur} /> -{" "}
-                                            <span class="text-slate-600">{role.nom}</span>
-                                        </>
-                                    )}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
 
                 {film.synopsis && (
                     <div class="bg-white p-8 rounded-lg shadow-md border border-slate-200">
