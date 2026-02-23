@@ -1,9 +1,19 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import ImgPb from "../../components/ImgPb.astro";
+import type { FilmResponse, PersonneResponse } from "../../pocketbase-types";
+import { Debug } from "astro:components";
 export const prerender = false;
-const { id } = Astro.params;
-const film = await Astro.locals.pb.collection("Film").getOne(id);
+const { id } = Astro.params as { id: string; nom_slug: string };
+const film = await Astro.locals.pb.collection("Film").getOne<
+    FilmResponse<{
+        realisateur: PersonneResponse;
+        producteur: PersonneResponse[];
+        scenariste: PersonneResponse[];
+    }>
+>(id, {
+    expand: "realisateur, producteur, scenariste",
+});
 ---
 
 <Layout titre={film.titre}>
@@ -29,6 +39,24 @@ const film = await Astro.locals.pb.collection("Film").getOne(id);
                 thumb="400x600"
             />
         </div>
+    </div>
+    <div>
+        <h2>Réalisateur</h2>
+        <!-- <Debug {film} /> -->
+        <p>{film.expand.realisateur.prenom} {film.expand.realisateur.nom}</p>
+
+        {
+            film.expand.producteur && (
+                <h2>Producteur{film.expand.producteur.length > 1 && "s"}</h2>
+            )
+        }
+        {
+            film.expand.producteur?.map((prod) => (
+                <p>
+                    {prod.prenom} {prod.nom}
+                </p>
+            ))
+        }
     </div>
     {
         Astro.locals.pb.authStore.record?.id === film.user && (
