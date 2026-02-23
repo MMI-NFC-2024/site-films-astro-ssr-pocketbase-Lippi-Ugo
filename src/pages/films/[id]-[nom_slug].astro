@@ -1,10 +1,14 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import ImgPb from "../../components/ImgPb.astro";
-import type { FilmResponse, PersonneResponse } from "../../pocketbase-types";
-import { Debug } from "astro:components";
+import LinkPersonneSimple from "../../components/LinkPersonneSimple.astro";
+import type { FilmResponse, PersonneResponse, RoleResponse } from "../../pocketbase-types";
+import { formatAnnee, formatProfessions, formatPays } from "../../helpers";
 export const prerender = false;
+
 const { id } = Astro.params as { id: string; nom_slug: string };
+
+// Récupérer le film avec toutes les expansions nécessaires
 const film = await Astro.locals.pb.collection("Film").getOne<
     FilmResponse<{
         realisateur: PersonneResponse;
@@ -12,60 +16,181 @@ const film = await Astro.locals.pb.collection("Film").getOne<
         scenariste: PersonneResponse[];
     }>
 >(id, {
-    expand: "realisateur, producteur, scenariste",
+    expand: "realisateur,producteur,scenariste",
 });
+
+// Récupérer les rôles séparément avec expand pour les acteurs
+const roles = film.role && film.role.length > 0
+    ? await Astro.locals.pb.collection("Role").getFullList<
+          RoleResponse<{
+              acteur: PersonneResponse;
+          }>
+      >({
+          filter: film.role.map(roleId => `id="${roleId}"`).join(" || "),
+          expand: "acteur",
+      })
+    : [];
 ---
 
 <Layout titre={film.titre}>
-    <a
-        href="/films"
-        class="inline-flex items-center text-slate-600 hover:text-blue-600 mb-8 transition-colors font-medium"
-    >
-        ← Retour aux films
-    </a>
-    <div class="mb-6">
-        <h1 class="text-4xl font-bold mb-2 text-slate-900">{film.titre}</h1>
-        <p class="text-slate-600 text-sm">
-            {film.genres ? film.genres.join(", ") + " · " : ""}
-        </p>
-    </div>
-    <div class="flex flex-col md:flex-row md:gap-6 mb-10">
-        <div class="w-full md:w-1/3 lg:w-1/4 mb-4 md:mb-0">
-            <ImgPb
-                record={film}
-                field="affiche"
-                classPicture="w-full h-full"
-                classImg="w-full h-auto object-cover rounded-lg"
-                thumb="400x600"
-            />
-        </div>
-    </div>
-    <div>
-        <h2>Réalisateur</h2>
-        <!-- <Debug {film} /> -->
-        <p>{film.expand.realisateur.prenom} {film.expand.realisateur.nom}</p>
+    <div class="max-w-6xl mx-auto">
+        <a
+            href="/films"
+            class="inline-flex items-center text-slate-600 hover:text-blue-600 mb-8 transition-colors font-medium"
+        >
+            ← Retour aux films
+        </a>
 
-        {
-            film.expand.producteur && (
-                <h2>Producteur{film.expand.producteur.length > 1 && "s"}</h2>
-            )
-        }
-        {
-            film.expand.producteur?.map((prod) => (
-                <p>
-                    {prod.prenom} {prod.nom}
-                </p>
-            ))
-        }
-    </div>
-    {
-        Astro.locals.pb.authStore.record?.id === film.user && (
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div class="lg:col-span-1">
+                <div class="rounded-lg overflow-hidden shadow-xl bg-slate-200">
+                    <ImgPb
+                        record={film}
+                        field="affiche"
+                        classPicture="w-full h-full"
+                        classImg="w-full h-auto object-cover"
+                        thumb="400x600"
+                    />
+                </div>
+            </div>
+
+            <div class="lg:col-span-2">
+                <h1 class="text-5xl font-bold mb-8 text-slate-900">
+                    {film.titre}
+                </h1>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+                    {film.date_sortie && (
+                        <div class="bg-white p-5 rounded-lg shadow-md border border-slate-200">
+                            <p class="text-slate-500 text-xs uppercase tracking-wide mb-2">
+                                Année de sortie
+                            </p>
+                            <p class="text-slate-900 font-medium">
+                                {formatAnnee(film.date_sortie)}
+                            </p>
+                        </div>
+                    )}
+
+                    {film.pays_origine && (
+                        <div class="bg-white p-5 rounded-lg shadow-md border border-slate-200">
+                            <p class="text-slate-500 text-xs uppercase tracking-wide mb-2">
+                                Pays d'origine
+                            </p>
+                            <p class="text-slate-900 font-medium">
+                                {formatPays(film.pays_origine)}
+                            </p>
+                        </div>
+                    )}
+
+                    {film.duree_min && (
+                        <div class="bg-white p-5 rounded-lg shadow-md border border-slate-200">
+                            <p class="text-slate-500 text-xs uppercase tracking-wide mb-2">
+                                Durée
+                            </p>
+                            <p class="text-slate-900 font-medium">
+                                {film.duree_min} minutes
+                            </p>
+                        </div>
+                    )}
+
+                    {film.genres && film.genres.length > 0 && (
+                        <div class="bg-white p-5 rounded-lg shadow-md border border-slate-200">
+                            <p class="text-slate-500 text-xs uppercase tracking-wide mb-2">
+                                Genre{film.genres.length > 1 ? "s" : ""}
+                            </p>
+                            <p class="text-slate-900 font-medium">
+                                {formatProfessions(film.genres)}
+                            </p>
+                        </div>
+                    )}
+
+                    {film.expand?.realisateur && (
+                        <div class="bg-white p-5 rounded-lg shadow-md border border-slate-200">
+                            <p class="text-slate-500 text-xs uppercase tracking-wide mb-2">
+                                Réalisateur
+                            </p>
+                            <p class="text-slate-900 font-medium">
+                                <LinkPersonneSimple personne={film.expand.realisateur} />
+                            </p>
+                        </div>
+                    )}
+
+                    {film.expand?.scenariste && film.expand.scenariste.length > 0 && (
+                        <div class="bg-white p-5 rounded-lg shadow-md border border-slate-200">
+                            <p class="text-slate-500 text-xs uppercase tracking-wide mb-2">
+                                Scénariste{film.expand.scenariste.length > 1 ? "s" : ""}
+                            </p>
+                            <p class="text-slate-900 font-medium">
+                                {film.expand.scenariste
+                                    .map((scenariste, index) => (
+                                        <>
+                                            <LinkPersonneSimple personne={scenariste} />
+                                            {index < film.expand!.scenariste!.length - 1 && 
+                                                (index === film.expand!.scenariste!.length - 2 ? " et " : ", ")}
+                                        </>
+                                    ))}
+                            </p>
+                        </div>
+                    )}
+
+                    {film.expand?.producteur && film.expand.producteur.length > 0 && (
+                        <div class="bg-white p-5 rounded-lg shadow-md border border-slate-200">
+                            <p class="text-slate-500 text-xs uppercase tracking-wide mb-2">
+                                Producteur{film.expand.producteur.length > 1 ? "s" : ""}
+                            </p>
+                            <p class="text-slate-900 font-medium">
+                                {film.expand.producteur
+                                    .map((producteur, index) => (
+                                        <>
+                                            <LinkPersonneSimple personne={producteur} />
+                                            {index < film.expand!.producteur!.length - 1 && 
+                                                (index === film.expand!.producteur!.length - 2 ? " et " : ", ")}
+                                        </>
+                                    ))}
+                            </p>
+                        </div>
+                    )}
+                </div>
+
+                {roles && roles.length > 0 && (
+                    <div class="bg-white p-5 rounded-lg shadow-md border border-slate-200 mb-10">
+                        <p class="text-slate-500 text-xs uppercase tracking-wide mb-2">
+                            Distribution
+                        </p>
+                        <ul class="text-slate-900 font-medium space-y-1">
+                            {roles.map((role) => (
+                                <li>
+                                    {role.expand?.acteur && (
+                                        <>
+                                            <LinkPersonneSimple personne={role.expand.acteur} /> -{" "}
+                                            <span class="text-slate-600">{role.nom}</span>
+                                        </>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
+                {film.synopsis && (
+                    <div class="bg-white p-8 rounded-lg shadow-md border border-slate-200">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-4">Synopsis</h2>
+                        <div class="prose prose-slate max-w-none prose-p:text-slate-700">
+                            <p>{film.synopsis}</p>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+
+        {Astro.locals.pb.authStore.record?.id === film.user && (
             <a
                 href={`/films/edit/${film.id}`}
                 class="inline-flex items-center gap-2 mt-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
             >
                 Modifier le film
             </a>
-        )
-    }
+        )}
+    </div>
 </Layout>
+

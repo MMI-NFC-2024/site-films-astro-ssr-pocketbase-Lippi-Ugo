@@ -1,0 +1,16 @@
+---
+import slug from "slug";
+import type { PersonneResponse } from "../pocketbase-types";
+
+interface Props {
+    personne: PersonneResponse;
+}
+const { personne } = Astro.props;
+---
+
+<a
+    href={`/personnes/${personne.id}-${slug((personne.prenom ? personne.prenom + " " : "") + (personne.nom ?? "Inconnu"))}`}
+    class="text-blue-600 hover:text-blue-800 hover:underline"
+>
+    {personne.prenom} {personne.nom}
+</a>
