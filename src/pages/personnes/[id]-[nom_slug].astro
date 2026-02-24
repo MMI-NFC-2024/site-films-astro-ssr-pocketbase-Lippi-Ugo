@@ -1,11 +1,22 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import ImgPb from "../../components/ImgPb.astro";
+import type { PersonneResponse, FilmResponse } from "../../pocketbase-types";
+import LinkListeFilm from "../../components/LinkListeFilm.astro";
 export const prerender = false;
 const { id } = Astro.params;
-const personne = await Astro.locals.pb.collection("Personne").getOne(id);
+const personne = await Astro.locals.pb
+    .collection<
+        PersonneResponse<{
+            Film_via_producteur: FilmResponse[];
+            Film_via_realisateur: FilmResponse[];
+            Film_via_scenariste: FilmResponse[];
+        }>
+    >("Personne")
+    .getOne(id, {
+        expand: "Film_via_realisateur,Film_via_producteur,Film_via_scenariste",
+    });
 ---
-
 <Layout titre={personne.nom}>
     <a
         href="/personnes"
@@ -15,7 +26,8 @@ const personne = await Astro.locals.pb.collection("Personne").getOne(id);
     </a>
     <div class="mb-6">
         <h1 class="text-4xl font-bold mb-2 text-slate-900">
-            {personne.prenom} {personne.nom}
+            {personne.prenom}
+            {personne.nom}
         </h1>
         <p class="text-slate-600 text-sm">
             {personne.profession ? personne.profession.join(", ") + " · " : ""}
@@ -31,6 +43,26 @@ const personne = await Astro.locals.pb.collection("Personne").getOne(id);
                 thumb="400x600"
             />
         </div>
+    </div>
+    <div>
+        {personne.expand?.Film_via_realisateur && personne.expand.Film_via_realisateur.length > 0 && (
+            <div>
+                <p>Film comme réalisateur</p>
+                <LinkListeFilm films={personne.expand.Film_via_realisateur} />
+            </div>
+        )}
+        {personne.expand?.Film_via_producteur && personne.expand.Film_via_producteur.length > 0 && (
+            <div>
+                <p>Film comme producteur</p>
+                <LinkListeFilm films={personne.expand.Film_via_producteur} />
+            </div>
+        )}
+        {personne.expand?.Film_via_scenariste && personne.expand.Film_via_scenariste.length > 0 && (
+            <div>
+                <p>Film comme scénariste</p>
+                <LinkListeFilm films={personne.expand.Film_via_scenariste} />
+            </div>
+        )}
     </div>
     {
         Astro.locals.pb.authStore.record?.id === personne.user && (

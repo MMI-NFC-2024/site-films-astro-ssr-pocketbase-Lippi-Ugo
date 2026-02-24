@@ -33,7 +33,7 @@ const { film } = Astro.props;
                 class="text-xs text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
             >
                 {film.genres ? film.genres.join(", ") + " · " : ""}
-                {film.date_sortie ? formatAnnee(new Date(film.date_sortie)) : "N/A"}
+                {film.date_sortie ? formatAnnee(film.date_sortie) : "N/A"}
             </p>
         </div>
     </div>

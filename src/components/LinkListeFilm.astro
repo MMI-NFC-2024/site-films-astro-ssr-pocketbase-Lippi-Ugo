@@ -1,0 +1,19 @@
+---
+import slug from "slug";
+import type { FilmResponse } from "../pocketbase-types";
+
+interface Props {
+    films: FilmResponse[];
+}
+const { films } = Astro.props;
+---
+
+<ul>
+    {films.map((film) => (
+        <li>
+            <a href={`/films/${film.id}-${slug(film.titre ?? "Inconnu")}`}>
+                {film.titre}
+            </a>
+        </li>
+    ))}
+</ul>

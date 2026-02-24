@@ -1,0 +1,93 @@
+---
+import slug from "slug";
+import Layout from "../../../layouts/Layout.astro";
+import type { FilmResponse, RoleResponse } from "../../../pocketbase-types";
+
+export const prerender = false;
+
+const { idFilm } = Astro.params;
+
+if (!idFilm) {
+    return Astro.redirect("/films");
+}
+
+const film = await Astro.locals.pb.collection("Film").getOne<FilmResponse>(idFilm);
+
+const personnesList = await Astro.locals.pb
+    .collection("Personne")
+    .getFullList({
+        sort: "nom",
+    });
+
+let message = "";
+let role = {} as RoleResponse;
+
+if (Astro.request.method === "POST") {
+    const data = await Astro.request.formData();
+    
+    // Étape 1 : Créer le rôle
+    const roleCree = await Astro.locals.pb
+        .collection("Role")
+        .create(data)
+        .catch((error) => {
+            console.error("Erreur lors de la création du rôle :", error);
+            message = error.message;
+        });
+    
+    // Étape 2 : Mettre à jour le film pour ajouter le rôle
+    if (roleCree) {
+        await Astro.locals.pb.collection("Film").update(idFilm, {
+            "role+": roleCree.id,
+        });
+        return Astro.redirect(
+            `/films/${film.id}-${slug(film.titre ?? "Inconnu")}`,
+        );
+    }
+}
+---
+
+<Layout titre="Édition d'un rôle">
+    <h1 class="text-4xl mb-12 text-gray-900">Ajouter un rôle</h1>
+    {message && <p class="text-red-600">{message}</p>}
+    <form method="post">
+        {idFilm && <input name="id" type="hidden" value={idFilm} />}
+        <input
+            name="user"
+            type="hidden"
+            value={Astro.locals.pb.authStore.record?.id}
+        />
+        <label>
+            <span class="text-gray-700">Nom du rôle :</span>
+            <input
+                name="nom"
+                type="text"
+                class="mt-1 block w-full"
+                placeholder="Ex: James Bond, Indiana Jones..."
+                value={role.nom}
+            />
+        </label>
+        <label>
+            <span class="text-gray-700">Acteur/Actrice :</span>
+            <select name="acteur" class="mt-1 block">
+                <option> Choisir un acteur </option>
+                {
+                    personnesList.map(
+                        ({nom,prenom,id}) => (
+                            <option
+                                selected={role.acteur === id}
+                                value={id}
+                            >
+                                {nom} {prenom}
+                            </option>
+                        ),
+                    )
+                }
+            </select>
+        </label>
+        <button
+            type="submit"
+            class="items-center gap-2 mt-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all block!"
+            >{idFilm ? "Mettre à jour" : "Ajouter"}</button
+        >
+    </form>
+</Layout>
