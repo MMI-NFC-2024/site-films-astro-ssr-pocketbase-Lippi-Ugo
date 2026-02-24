@@ -1,0 +1,69 @@
+---
+import slug from "slug";
+import Layout from "../../../layouts/Layout.astro";
+import type { FilmResponse, RoleResponse } from "../../../pocketbase-types";
+
+export const prerender = false;
+
+const { idFilm, idRole } = Astro.params;
+
+if (!idFilm) {
+    return Astro.redirect("/films");
+}
+
+const personnesList = await Astro.locals.pb
+    .collection("Personne")
+    .getFullList({
+        sort: "nom",
+    });
+
+let message = "";
+let role = {} as RoleResponse;
+let film = {} as FilmResponse;
+
+if (idFilm) {
+    film = await Astro.locals.pb.collection("Film").getOne<FilmResponse>(idFilm);
+}
+
+if (idRole) {
+    role = await Astro.locals.pb.collection("Role").getOne<RoleResponse>(idRole);
+}
+
+if (Astro.request.method === "POST") {
+    const roleCree = await Astro.locals.pb
+        .collection("Role")
+        .delete(idRole!)
+        .catch((error) => {
+            console.error("Erreur lors de la création du rôle :", error);
+            message = error.message;
+        });
+    if (roleCree) {
+        return Astro.redirect(
+            `/films/${film.id}-${slug(film.titre ?? "Inconnu")}`,
+        );
+    }
+}
+---
+
+<Layout titre="Édition d'un rôle">
+    <h1 class="text-4xl mb-12 text-gray-900">Supprimer un rôle</h1>
+    {message && <p class="text-red-600">{message}</p>}
+    <form method="post">
+        <input name="film" type="hidden" value={idFilm} />
+        <input
+            name="user"
+            type="hidden"
+            value={Astro.locals.pb.authStore.record?.id}
+        />
+        <label>
+            <span class="text-gray-700">Nom du rôle :</span>
+            {role.nom}
+        </label>
+
+        <button
+            type="submit"
+            class="items-center gap-2 mt-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all block!"
+            >Supprimer</button
+        >
+    </form>
+</Layout>
