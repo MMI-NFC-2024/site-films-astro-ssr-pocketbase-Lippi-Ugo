@@ -46,16 +46,16 @@ const personne = await Astro.locals.pb
                 
                 {
                     Astro.locals.pb.authStore.record?.id === personne.user && (
-                        <div class="mt-6 space-y-3">
+                        <div class="mt-6 space-y-3 mx-auto">
                             <a
                                 href={`/personnes/edit/${personne.id}`}
-                                class="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+                                class="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md transition-colors"
                             >
                                 Modifier l'artiste
                             </a>
                             <a
                                 href={`/personnes/supprimer-personne/${id}`}
-                                class="flex items-center justify-center gap-2 w-full bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+                                class="flex items-center justify-center gap-2 w-full border-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white font-semibold px-6 py-3 rounded-lg transition-colors"
                             >
                                 Supprimer l'artiste
                             </a>

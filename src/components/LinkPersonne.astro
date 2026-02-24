@@ -2,6 +2,7 @@
 import slug from "slug";
 import type { PersonneRecord } from "../pocketbase-types";
 import ImgPb from "./ImgPb.astro";
+import { formatNationalite } from "../helpers";
 interface Props {
     personne: PersonneRecord;
 }
@@ -34,9 +35,7 @@ const { personne } = Astro.props;
                         ? personne.profession.join(", ") + " · "
                         : ""
                 }
-                {
-                    personne.nationalite
-                }
+                {personne.nationalite ? formatNationalite(personne.nationalite) : ""}
             </p>
         </div>
     </div>

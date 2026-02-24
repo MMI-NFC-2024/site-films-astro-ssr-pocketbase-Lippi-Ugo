@@ -162,7 +162,7 @@ if (Astro.request.method === "POST") {
                                         selected={film.realisateur === id}
                                         value={id}
                                     >
-                                        {nom} {prenom}
+                                        {prenom} {nom}
                                     </option>
                                 ),
                             )
@@ -171,7 +171,7 @@ if (Astro.request.method === "POST") {
                 </label>
                 <label class="contents">
                     <span class="font-semibold text-gray-700 md:text-right md:pt-2">Producteur(s) :</span>
-                    <select name="producteur" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all min-h-[120px]" multiple>
+                    <select name="producteur" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all min-h-30" multiple>
                         <option> Choisir des producteurs </option>
                         {
                             personnesList.map(
@@ -180,7 +180,7 @@ if (Astro.request.method === "POST") {
                                         selected={film.producteur?.includes(id)}
                                         value={id}
                                     >
-                                        {nom} {prenom}
+                                        {prenom} {nom}
                                     </option>
                                 ),
                             )
@@ -195,7 +195,7 @@ if (Astro.request.method === "POST") {
                     >
                     <a
                         href={id ? `/films/${id}-${slug(film.titre ?? "Inconnu")}` : "/films"}
-                        class="text-gray-600 hover:text-gray-800 font-semibold px-6 py-3 transition-colors"
+                        class="inline-flex items-center gap-2 bg-slate-600 hover:bg-slate-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
                     >
                         Annuler
                     </a>
