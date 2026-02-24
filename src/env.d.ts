@@ -6,4 +6,7 @@ declare global {
             pb: TypedPocketBase;
         }
     }
+    interface ImportMetaEnv {
+        PB_URL: string;
+    }
 }
