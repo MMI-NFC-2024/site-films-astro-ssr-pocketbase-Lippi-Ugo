@@ -1,0 +1,56 @@
+---
+import slug from "slug";
+import Layout from "../../../layouts/Layout.astro";
+import type { PersonneResponse } from "../../../pocketbase-types";
+
+export const prerender = false;
+
+const { idPersonne } = Astro.params;
+
+if (!idPersonne) {
+    return Astro.redirect("/personnes");
+}
+
+let message = "";
+let personne = {} as PersonneResponse;
+
+if (idPersonne) {
+    personne = await Astro.locals.pb.collection("Personne").getOne<PersonneResponse>(idPersonne);
+}
+
+if (Astro.request.method === "POST") {
+    const filmSuppr = await Astro.locals.pb
+        .collection("Personne")
+        .delete(idPersonne!)
+        .catch((error) => {
+            console.error("Erreur lors de la suppression de la personne :", error);
+            message = error.message;
+        });
+    if (filmSuppr) {
+        return Astro.redirect("/personnes");
+    }
+}
+---
+
+<Layout titre="Supprimer un artiste">
+    <h1 class="text-4xl mb-12 text-gray-900">Supprimer un artiste</h1>
+    {message && <p class="text-red-600">{message}</p>}
+    <form method="post">
+        <input name="personne" type="hidden" value={idPersonne} />
+        <input
+            name="user"
+            type="hidden"
+            value={Astro.locals.pb.authStore.record?.id}
+        />
+        <label>
+            <span class="text-gray-700">Nom de la personne :</span>
+            {personne.prenom} {personne.nom}
+        </label>
+
+        <button
+            type="submit"
+            class="items-center gap-2 mt-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all block!"
+            >Supprimer</button
+        >
+    </form>
+</Layout>
