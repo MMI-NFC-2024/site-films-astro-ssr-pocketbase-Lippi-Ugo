@@ -21,7 +21,7 @@ if (id) {
 }
 if (Astro.request.method === "POST") {
     const data = await Astro.request.formData();
-    // Ne pas envoyer le fichier s'il est vide (pour garder l'ancienne image)
+
     const afficheFile = data.get("affiche") as File;
     if (afficheFile && afficheFile.size === 0) {
         data.delete("affiche");
