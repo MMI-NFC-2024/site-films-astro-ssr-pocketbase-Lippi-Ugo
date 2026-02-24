@@ -1,77 +1,201 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import ImgPb from "../../components/ImgPb.astro";
-import type { PersonneResponse, FilmResponse } from "../../pocketbase-types";
+import type { PersonneResponse, FilmResponse, RoleResponse } from "../../pocketbase-types";
 import LinkListeFilm from "../../components/LinkListeFilm.astro";
+import slug from "slug";
+import { formatDateLong, calculerAge, formatProfessions, formatNationalite } from "../../helpers";
+
 export const prerender = false;
+
 const { id } = Astro.params;
+
 const personne = await Astro.locals.pb
     .collection<
         PersonneResponse<{
             Film_via_producteur: FilmResponse[];
             Film_via_realisateur: FilmResponse[];
             Film_via_scenariste: FilmResponse[];
+            Role_via_acteur: RoleResponse<{ film: FilmResponse }>[];
         }>
     >("Personne")
-    .getOne(id, {
-        expand: "Film_via_realisateur,Film_via_producteur,Film_via_scenariste",
+    .getOne(id!, {
+        expand: "Film_via_realisateur,Film_via_producteur,Film_via_scenariste,Role_via_acteur.film",
     });
 ---
 <Layout titre={personne.nom}>
-    <a
-        href="/personnes"
-        class="inline-flex items-center text-slate-600 hover:text-blue-600 mb-8 transition-colors font-medium"
-    >
-        ← Retour aux artistes
-    </a>
-    <div class="mb-6">
-        <h1 class="text-4xl font-bold mb-2 text-slate-900">
-            {personne.prenom}
-            {personne.nom}
-        </h1>
-        <p class="text-slate-600 text-sm">
-            {personne.profession ? personne.profession.join(", ") + " · " : ""}
-        </p>
-    </div>
-    <div class="flex flex-col md:flex-row md:gap-6 mb-10">
-        <div class="w-full md:w-1/3 lg:w-1/4 mb-4 md:mb-0">
-            <ImgPb
-                record={personne}
-                field="photo"
-                classPicture="w-full h-full"
-                classImg="w-full h-auto object-cover rounded-lg"
-                thumb="400x600"
-            />
+    <div class="max-w-6xl mx-auto">
+        <a
+            href="/personnes"
+            class="inline-flex items-center text-slate-600 hover:text-blue-600 mb-8 transition-colors font-medium"
+        >
+            ← Retour aux artistes
+        </a>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div class="lg:col-span-1">
+                <div class="rounded-lg overflow-hidden shadow-xl bg-slate-200">
+                    <ImgPb
+                        record={personne}
+                        field="photo"
+                        classPicture="w-full h-full"
+                        classImg="w-full h-auto object-cover"
+                        thumb="400x600"
+                    />
+                </div>
+                
+                {
+                    Astro.locals.pb.authStore.record?.id === personne.user && (
+                        <div class="mt-6">
+                            <a
+                                href={`/personnes/edit/${personne.id}`}
+                                class="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+                            >
+                                Modifier la personne
+                            </a>
+                        </div>
+                    )
+                }
+            </div>
+
+            <div class="lg:col-span-2">
+                <h1 class="text-5xl font-bold mb-8 text-slate-900">
+                    {personne.prenom} {personne.nom}
+                </h1>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+                    {
+                        personne.date_naissance && (
+                            <div class="bg-white p-5 rounded-lg shadow-md border border-slate-200">
+                                <p class="text-slate-500 text-xs uppercase tracking-wide mb-2">
+                                    Naissance
+                                </p>
+                                <p class="text-slate-900 font-medium">
+                                    {formatDateLong(personne.date_naissance)}
+                                </p>
+                                {!personne.date_deces && (
+                                    <p class="text-blue-600 text-sm mt-1">
+                                        {calculerAge(personne.date_naissance)} ans
+                                    </p>
+                                )}
+                            </div>
+                        )
+                    }
+
+                    {
+                        personne.date_deces && (
+                            <div class="bg-white p-5 rounded-lg shadow-md border border-slate-200">
+                                <p class="text-slate-500 text-xs uppercase tracking-wide mb-2">
+                                    Décès
+                                </p>
+                                <p class="text-slate-900 font-medium">
+                                    {formatDateLong(personne.date_deces)}
+                                </p>
+                                {personne.date_naissance && (
+                                    <p class="text-blue-600 text-sm mt-1">
+                                        {calculerAge(personne.date_naissance, personne.date_deces)} ans
+                                    </p>
+                                )}
+                            </div>
+                        )
+                    }
+
+                    {
+                        personne.nationalite && (
+                            <div class="bg-white p-5 rounded-lg shadow-md border border-slate-200">
+                                <p class="text-slate-500 text-xs uppercase tracking-wide mb-2">
+                                    Nationalité
+                                </p>
+                                <p class="text-slate-900 font-medium">
+                                    {formatNationalite(personne.nationalite)}
+                                </p>
+                            </div>
+                        )
+                    }
+
+                    {
+                        personne.profession && personne.profession.length > 0 && (
+                            <div class="bg-white p-5 rounded-lg shadow-md border border-slate-200">
+                                <p class="text-slate-500 text-xs uppercase tracking-wide mb-2">
+                                    Profession{personne.profession.length > 1 ? "s" : ""}
+                                </p>
+                                <p class="text-slate-900 font-medium">
+                                    {formatProfessions(personne.profession)}
+                                </p>
+                            </div>
+                        )
+                    }
+
+                    {
+                        personne.expand?.Film_via_realisateur &&
+                            personne.expand.Film_via_realisateur.length > 0 && (
+                                <div class="bg-white p-5 rounded-lg shadow-md border border-slate-200">
+                                    <p class="text-slate-500 text-xs uppercase tracking-wide mb-2">
+                                        Films réalisés
+                                    </p>
+                                    <div class="text-slate-900 font-medium">
+                                        <LinkListeFilm films={personne.expand.Film_via_realisateur} />
+                                    </div>
+                                </div>
+                            )
+                    }
+
+                    {
+                        personne.expand?.Film_via_producteur &&
+                            personne.expand.Film_via_producteur.length > 0 && (
+                                <div class="bg-white p-5 rounded-lg shadow-md border border-slate-200">
+                                    <p class="text-slate-500 text-xs uppercase tracking-wide mb-2">
+                                        Films produits
+                                    </p>
+                                    <div class="text-slate-900 font-medium">
+                                        <LinkListeFilm films={personne.expand.Film_via_producteur} />
+                                    </div>
+                                </div>
+                            )
+                    }
+
+                    {
+                        personne.expand?.Film_via_scenariste &&
+                            personne.expand.Film_via_scenariste.length > 0 && (
+                                <div class="bg-white p-5 rounded-lg shadow-md border border-slate-200">
+                                    <p class="text-slate-500 text-xs uppercase tracking-wide mb-2">
+                                        Films scénarisés
+                                    </p>
+                                    <div class="text-slate-900 font-medium">
+                                        <LinkListeFilm films={personne.expand.Film_via_scenariste} />
+                                    </div>
+                                </div>
+                            )
+                    }
+
+                    {
+                        personne.expand?.Role_via_acteur &&
+                            personne.expand.Role_via_acteur.length > 0 && (
+                                <div class="bg-white p-5 rounded-lg shadow-md border border-slate-200">
+                                    <p class="text-slate-500 text-xs uppercase tracking-wide mb-2">
+                                        Rôles joués
+                                    </p>
+                                    <ul class="text-slate-900 font-medium">
+                                        {personne.expand.Role_via_acteur.map(
+                                            (role) => (
+                                                <li>
+                                                    {role.expand?.film && (
+                                                        <>
+                                                            <a href={`/films/${role.expand.film.id}-${slug(role.expand.film.titre ?? "Inconnu")}`}>
+                                                                {role.expand.film.titre}
+                                                            </a>
+                                                            <span class="text-slate-600"> - {role.nom}</span>
+                                                        </>
+                                                    )}
+                                                </li>
+                                            ),
+                                        )}
+                                    </ul>
+                                </div>
+                            )
+                    }
+                </div>
+            </div>
         </div>
     </div>
-    <div>
-        {personne.expand?.Film_via_realisateur && personne.expand.Film_via_realisateur.length > 0 && (
-            <div>
-                <p>Film comme réalisateur</p>
-                <LinkListeFilm films={personne.expand.Film_via_realisateur} />
-            </div>
-        )}
-        {personne.expand?.Film_via_producteur && personne.expand.Film_via_producteur.length > 0 && (
-            <div>
-                <p>Film comme producteur</p>
-                <LinkListeFilm films={personne.expand.Film_via_producteur} />
-            </div>
-        )}
-        {personne.expand?.Film_via_scenariste && personne.expand.Film_via_scenariste.length > 0 && (
-            <div>
-                <p>Film comme scénariste</p>
-                <LinkListeFilm films={personne.expand.Film_via_scenariste} />
-            </div>
-        )}
-    </div>
-    {
-        Astro.locals.pb.authStore.record?.id === personne.user && (
-            <a
-                href={`/personnes/edit/${personne.id}`}
-                class="inline-flex items-center gap-2 mt-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
-            >
-                Modifier la personne
-            </a>
-        )
-    }
 </Layout>
