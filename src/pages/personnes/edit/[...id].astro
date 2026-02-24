@@ -13,6 +13,11 @@ if (id) {
 }
 if (Astro.request.method === "POST") {
     const data = await Astro.request.formData();
+    // Ne pas envoyer le fichier s'il est vide (pour garder l'ancienne image)
+    const photoFile = data.get("photo") as File;
+    if (photoFile && photoFile.size === 0) {
+        data.delete("photo");
+    }
     const personneCree = await (id
         ? Astro.locals.pb.collection("Personne").update(id!, data)
         : Astro.locals.pb

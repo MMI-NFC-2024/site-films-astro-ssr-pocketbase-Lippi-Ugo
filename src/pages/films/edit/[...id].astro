@@ -21,6 +21,11 @@ if (id) {
 }
 if (Astro.request.method === "POST") {
     const data = await Astro.request.formData();
+    // Ne pas envoyer le fichier s'il est vide (pour garder l'ancienne image)
+    const afficheFile = data.get("affiche") as File;
+    if (afficheFile && afficheFile.size === 0) {
+        data.delete("affiche");
+    }
     const filmCree = await (id
         ? Astro.locals.pb.collection("Film").update(id!, data)
         : Astro.locals.pb
@@ -178,6 +183,24 @@ if (Astro.request.method === "POST") {
                                 ({nom,prenom,id}) => (
                                     <option
                                         selected={film.producteur?.includes(id)}
+                                        value={id}
+                                    >
+                                        {prenom} {nom}
+                                    </option>
+                                ),
+                            )
+                        }
+                    </select>
+                </label>
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Scénariste(s) :</span>
+                    <select name="scenariste" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all min-h-30" multiple>
+                        <option> Choisir des scénaristes </option>
+                        {
+                            personnesList.map(
+                                ({nom,prenom,id}) => (
+                                    <option
+                                        selected={film.scenariste?.includes(id)}
                                         value={id}
                                     >
                                         {prenom} {nom}
