@@ -43,47 +43,59 @@ if (Astro.request.method === "POST") {
 ---
 
 <Layout titre="Édition d'un rôle">
-    <h1 class="text-4xl mb-12 text-gray-900">Ajouter un rôle</h1>
-    {message && <p class="text-red-600">{message}</p>}
-    <form method="post">
-        <input name="film" type="hidden" value={idFilm} />
-        <input
-            name="user"
-            type="hidden"
-            value={Astro.locals.pb.authStore.record?.id}
-        />
-        <label>
-            <span class="text-gray-700">Nom du rôle :</span>
-            <input
-                name="nom"
-                type="text"
-                class="mt-1 block w-full"
-                placeholder="Ex: James Bond, Indiana Jones..."
-                value={role.nom}
-            />
-        </label>
-        <label>
-            <span class="text-gray-700">Acteur/Actrice :</span>
-            <select name="acteur" class="mt-1 block">
-                <option> Choisir un acteur </option>
-                {
-                    personnesList.map(
-                        ({nom,prenom,id}) => (
-                            <option
-                                selected={role.acteur === id}
-                                value={id}
-                            >
-                                {nom} {prenom}
-                            </option>
-                        ),
-                    )
-                }
-            </select>
-        </label>
-        <button
-            type="submit"
-            class="items-center gap-2 mt-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all block!"
-            >Ajouter</button
-        >
-    </form>
+    <div class="max-w-4xl mx-auto py-8 px-4">
+        <h1 class="text-4xl font-bold mb-8 text-gray-900">Ajouter un rôle</h1>
+        {message && <p class="text-red-600 mb-4 bg-red-50 border border-red-200 rounded-lg p-4">{message}</p>}
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <form method="post" class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-x-6 gap-y-4">
+                <input name="film" type="hidden" value={idFilm} />
+                <input
+                    name="user"
+                    type="hidden"
+                    value={Astro.locals.pb.authStore.record?.id}
+                />
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Nom du rôle :</span>
+                    <input
+                        name="nom"
+                        type="text"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder="Ex: James Bond, Indiana Jones..."
+                        value={role.nom}
+                    />
+                </label>
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Acteur/Actrice :</span>
+                    <select name="acteur" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                        <option> Choisir un acteur </option>
+                        {
+                            personnesList.map(
+                                ({nom,prenom,id}) => (
+                                    <option
+                                        selected={role.acteur === id}
+                                        value={id}
+                                    >
+                                        {nom} {prenom}
+                                    </option>
+                                ),
+                            )
+                        }
+                    </select>
+                </label>
+                <div class="md:col-start-2 flex gap-4 mt-6">
+                    <button
+                        type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+                        >Ajouter</button
+                    >
+                    <a
+                        href={`/films/${film.id}-${slug(film.titre ?? "Inconnu")}`}
+                        class="text-gray-600 hover:text-gray-800 font-semibold px-6 py-3 transition-colors"
+                    >
+                        Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
 </Layout>

@@ -2,6 +2,7 @@
 import slug from "slug";
 import { formatDate } from "../../../helpers";
 import Layout from "../../../layouts/Layout.astro";
+import ImgPb from "../../../components/ImgPb.astro";
 import type { PersonneResponse } from "../../../pocketbase-types";
 import { PersonneNationaliteOptions, PersonneProfessionOptions } from "../../../pocketbase-types";
 const { id } = Astro.params;
@@ -33,87 +34,144 @@ if (Astro.request.method === "POST") {
 ---
 
 <Layout titre="Édition d'un artiste">
-    <h1 class="text-4xl font-bold mb-12 text-slate-900">Ajouter un nouvel artiste</h1>
-    {message && <p class="text-red-600">{message}</p>}
-    <form method="post">
-        {id && <input name="id" type="hidden" value={id} />}
-        <input
-            name="user"
-            type="hidden"
-            value={Astro.locals.pb.authStore.record?.id}
-        />
-        <label class="block">
-            <span class="text-gray-700">Nom :</span>
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl font-bold mb-8 text-slate-900">
+            {id ? "Modifier l'artiste" : "Ajouter un nouvel artiste"}
+        </h1>
+        {message && <p class="text-red-600 mb-4 p-4 bg-red-50 rounded-lg">{message}</p>}
+        
+        <form method="post" enctype="multipart/form-data" class="bg-white p-8 rounded-lg shadow-md border border-slate-200">
+            {id && <input name="id" type="hidden" value={id} />}
             <input
-                name="nom"
-                type="text"
-                class="mt-1 block w-full"
-                placeholder=""
-                value={personne.nom}
+                name="user"
+                type="hidden"
+                value={Astro.locals.pb.authStore.record?.id}
             />
-        </label>
-        <label class="block">
-            <span class="text-gray-700">Prénom :</span>
-            <input
-                name="prenom"
-                type="text"
-                class="mt-1 block w-full"
-                placeholder=""
-                value={personne.prenom}
-            />
-        </label>
-        <label class="block">
-            <span class="text-gray-700">Date de naissance :</span>
-            <input
-                name="date_naissance"
-                type="date"
-                class="mt-1 block w-full"
-                placeholder=""
-                value={formatDate(personne.date_naissance)}
-            />
-        </label>
-        <label class="block">
-            <span class="text-gray-700">Date de décès :</span>
-            <input
-                name="date_deces"
-                type="date"
-                class="mt-1 block w-full"
-                placeholder=""
-                value={formatDate(personne.date_deces)}
-            />
-        </label>
-        <fieldset class="block">
-            <legend class="text-gray-700">Profession :</legend>
-            {
-                Object.entries(PersonneProfessionOptions).map(([key, value]) => (
-                    <label class="inline-block mr-4">
-                        <input type="checkbox" name="profession" value={value} checked={personne.profession?.includes(value)}/>
-                        {key}
-                    </label>
-                ))
-            }
-        </fieldset>
-        <!-- <label class="block">
-            <span class="text-gray-700">Photo :</span>
-            <input name="photo" type="" class="mt-1 block w-full" placeholder="">
-        </label> -->
-        <label class="block">
-            <span class="text-gray-700">Nationalite :</span>
-            <select name="nationalite" class="mt-1 block">
-                <option>
-                    Choisir une nationalité
-                </option>
-                {
-                    Object.entries(PersonneNationaliteOptions).map(([key, value]) => (
-                        <option selected={personne.nationalite === key} value={key} >{value}</option>
-                    ))
-                }
-            </select>
-        </label>
-        <button
-            type="submit"
-            class="inline-flex items-center gap-2 mt-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
-            >{id ? "Mettre à jour" : "Ajouter"}</button
-        >
-    </form>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <label class="block">
+                    <span class="text-slate-700 font-medium mb-2 block">Nom :</span>
+                    <input
+                        name="nom"
+                        type="text"
+                        required
+                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        placeholder="Dupont"
+                        value={personne.nom}
+                    />
+                </label>
+                
+                <label class="block">
+                    <span class="text-slate-700 font-medium mb-2 block">Prénom :</span>
+                    <input
+                        name="prenom"
+                        type="text"
+                        required
+                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        placeholder="Jean"
+                        value={personne.prenom}
+                    />
+                </label>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <label class="block">
+                    <span class="text-slate-700 font-medium mb-2 block">Date de naissance :</span>
+                    <input
+                        name="date_naissance"
+                        type="date"
+                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        value={formatDate(personne.date_naissance)}
+                    />
+                </label>
+                
+                <label class="block">
+                    <span class="text-slate-700 font-medium mb-2 block">Date de décès :</span>
+                    <input
+                        name="date_deces"
+                        type="date"
+                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        value={formatDate(personne.date_deces)}
+                    />
+                </label>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block">
+                    <span class="text-slate-700 font-medium mb-2 block">Nationalité :</span>
+                    <select 
+                        name="nationalite" 
+                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    >
+                        <option value="">Choisir une nationalité</option>
+                        {
+                            Object.entries(PersonneNationaliteOptions).map(([key, value]) => (
+                                <option selected={personne.nationalite === key} value={key}>{value}</option>
+                            ))
+                        }
+                    </select>
+                </label>
+            </div>
+            
+            <fieldset class="mb-6">
+                <legend class="text-slate-700 font-medium mb-3 block">Profession(s) :</legend>
+                <div class="grid grid-cols-2 gap-3">
+                    {
+                        Object.entries(PersonneProfessionOptions).map(([key, value]) => (
+                            <label class="flex items-center space-x-2 p-3 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
+                                <input 
+                                    type="checkbox" 
+                                    name="profession" 
+                                    value={value} 
+                                    checked={personne.profession?.includes(value)}
+                                    class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                                />
+                                <span class="text-slate-700">{key}</span>
+                            </label>
+                        ))
+                    }
+                </div>
+            </fieldset>
+            
+            <div class="mb-6">
+                <label class="block">
+                    <span class="text-slate-700 font-medium mb-2 block">Photo :</span>
+                    <input
+                        name="photo"
+                        type="file"
+                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                    {id && personne.photo && (
+                        <div class="mt-4">
+                            <p class="text-sm text-slate-600 mb-2">Photo actuelle :</p>
+                            <div class="w-48">
+                                <ImgPb
+                                    record={personne}
+                                    field="photo"
+                                    classPicture="w-full h-full"
+                                    classImg="w-full h-auto rounded-lg shadow-md"
+                                    thumb="400x600"
+                                />
+                            </div>
+                        </div>
+                    )}
+                </label>
+            </div>
+            
+            <div class="flex gap-4 pt-4">
+                <button
+                    type="submit"
+                    class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+                >
+                    {id ? "Mettre à jour" : "Ajouter"}
+                </button>
+                <a
+                    href={id ? `/personnes/${id}-${slug(personne.nom ?? "Inconnu")}` : "/personnes"}
+                    class="inline-flex items-center gap-2 bg-slate-600 hover:bg-slate-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+                >
+                    Annuler
+                </a>
+            </div>
+        </form>
+    </div>
 </Layout>

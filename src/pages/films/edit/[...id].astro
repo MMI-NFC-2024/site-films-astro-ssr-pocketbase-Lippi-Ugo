@@ -39,151 +39,168 @@ if (Astro.request.method === "POST") {
 ---
 
 <Layout titre="Édition d'un film">
-    <h1 class="text-4xl mb-12 text-gray-900">Ajouter un nouveau film</h1>
-    {message && <p class="text-red-600">{message}</p>}
-    <form method="post" enctype="multipart/form-data" class="*:contents grid grid-cols-[10rem_1fr]">
-        {id && <input name="id" type="hidden" value={id} />}
-        <input
-            name="user"
-            type="hidden"
-            value={Astro.locals.pb.authStore.record?.id}
-        />
-        <label>
-            <span class="text-gray-700">Titre :</span>
-            <input
-                name="titre"
-                type="text"
-                class="mt-1 block w-full"
-                placeholder=""
-                value={film.titre}
-            />
-        </label>
-        <label>
-            <span class="text-gray-700">Synopsis</span>
-            <input
-                name="synopsis"
-                type="text"
-                class="mt-1 block w-full"
-                placeholder=""
-                value={film.synopsis}
-            />
-        </label>
-        <label>
-            <span class="text-gray-700">Date de sortie :</span>
-            <input
-                name="date_sortie"
-                type="date"
-                class="mt-1 block w-full"
-                placeholder=""
-                value={formatDate(film.date_sortie)}
-            />
-        </label>
-        <label>
-            <span class="text-gray-700">Durée (min) :</span>
-            <input
-                name="duree_min"
-                type="number"
-                class="mt-1 block w-full"
-                placeholder=""
-                value={film.duree_min}
-            />
-        </label>
-        <label class="block">
-            <span class="text-gray-700">Affiche :</span>
-            <input
-                name="affiche"
-                type="file"
-                class="mt-1 block w-full"
-            />
-            {id && film.affiche && (
-                <div class="mt-4">
-                    <p class="text-sm text-slate-600 mb-2">Affiche actuelle :</p>
-                    <div class="w-48">
-                        <ImgPb
-                            record={film}
-                            field="affiche"
-                            classPicture="w-full h-full"
-                            classImg="w-full h-auto rounded-lg shadow-md"
-                            thumb="400x600"
+    <div class="max-w-4xl mx-auto py-8 px-4">
+        <h1 class="text-4xl font-bold mb-8 text-gray-900">{id ? "Édition d'un film" : "Ajout d'un film"}</h1>
+        {message && <p class="text-red-600 mb-4 bg-red-50 border border-red-200 rounded-lg p-4">{message}</p>}
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <form method="post" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-x-6 gap-y-4">
+                {id && <input name="id" type="hidden" value={id} />}
+                <input
+                    name="user"
+                    type="hidden"
+                    value={Astro.locals.pb.authStore.record?.id}
+                />
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Titre :</span>
+                    <input
+                        name="titre"
+                        type="text"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder=""
+                        value={film.titre}
+                    />
+                </label>
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Synopsis :</span>
+                    <input
+                        name="synopsis"
+                        type="text"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder=""
+                        value={film.synopsis}
+                    />
+                </label>
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Date de sortie :</span>
+                    <input
+                        name="date_sortie"
+                        type="date"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder=""
+                        value={formatDate(film.date_sortie)}
+                    />
+                </label>
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Durée (min) :</span>
+                    <input
+                        name="duree_min"
+                        type="number"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder=""
+                        value={film.duree_min}
+                    />
+                </label>
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Affiche :</span>
+                    <div>
+                        <input
+                            name="affiche"
+                            type="file"
+                            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all w-full"
                         />
+                        {id && film.affiche && (
+                            <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-600 mb-2 font-medium">Affiche actuelle :</p>
+                                <div class="w-48">
+                                    <ImgPb
+                                        record={film}
+                                        field="affiche"
+                                        classPicture="w-full h-full"
+                                        classImg="w-full h-auto rounded-lg shadow-md"
+                                        thumb="400x600"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </label>
+                <div class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Genres :</span>
+                    <div class="grid grid-cols-2 gap-3">
+                        {
+                            Object.entries(FilmGenresOptions).map(([key, value]) => (
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        name="genres"
+                                        value={value}
+                                        checked={film.genres?.includes(value)}
+                                        class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    <span class="text-gray-700">{key}</span>
+                                </label>
+                            ))
+                        }
                     </div>
                 </div>
-            )}
-        </label>
-        <fieldset class="col-span-2 block!">
-            <legend class="text-gray-700">Genres :</legend>
-            {
-                Object.entries(FilmGenresOptions).map(([key, value]) => (
-                    <label class="inline-block mr-4">
-                        <input
-                            type="checkbox"
-                            name="genres"
-                            value={value}
-                            checked={film.genres?.includes(value)}
-                        />
-                        {key}
-                    </label>
-                ))
-            }
-        </fieldset>
-        <label>
-            <span class="text-gray-700">Pays d'origine :</span>
-            <select name="pays_origine" class="mt-1 block">
-                <option> Choisir un pays d'origine </option>
-                {
-                    Object.entries(FilmPaysOrigineOptions).map(
-                        ([key, value]) => (
-                            <option
-                                selected={film.pays_origine === key}
-                                value={key}
-                            >
-                                {value}
-                            </option>
-                        ),
-                    )
-                }
-            </select>
-        </label>
-        <label>
-            <span class="text-gray-700">Réalisateur :</span>
-            <select name="realisateur" class="mt-1 block">
-                <option> Choisir un réalisateur </option>
-                {
-                    personnesList.map(
-                        ({nom,prenom,id}) => (
-                            <option
-                                selected={film.realisateur === id}
-                                value={id}
-                            >
-                                {nom} {prenom}
-                            </option>
-                        ),
-                    )
-                }
-            </select>
-        </label>
-        <label>
-            <span class="text-gray-700">Producteur(s) :</span>
-            <select name="producteur" class="mt-1 block" multiple>
-                <option> Choisir des producteurs </option>
-                {
-                    personnesList.map(
-                        ({nom,prenom,id}) => (
-                            <option
-                                selected={film.producteur?.includes(id)}
-                                value={id}
-                            >
-                                {nom} {prenom}
-                            </option>
-                        ),
-                    )
-                }
-            </select>
-        </label>
-        <button
-            type="submit"
-            class="items-center gap-2 mt-8 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all block!"
-            >{id ? "Mettre à jour" : "Ajouter"}</button
-        >
-    </form>
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Pays d'origine :</span>
+                    <select name="pays_origine" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                        <option> Choisir un pays d'origine </option>
+                        {
+                            Object.entries(FilmPaysOrigineOptions).map(
+                                ([key, value]) => (
+                                    <option
+                                        selected={film.pays_origine === key}
+                                        value={key}
+                                    >
+                                        {value}
+                                    </option>
+                                ),
+                            )
+                        }
+                    </select>
+                </label>
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Réalisateur :</span>
+                    <select name="realisateur" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                        <option> Choisir un réalisateur </option>
+                        {
+                            personnesList.map(
+                                ({nom,prenom,id}) => (
+                                    <option
+                                        selected={film.realisateur === id}
+                                        value={id}
+                                    >
+                                        {nom} {prenom}
+                                    </option>
+                                ),
+                            )
+                        }
+                    </select>
+                </label>
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Producteur(s) :</span>
+                    <select name="producteur" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all min-h-[120px]" multiple>
+                        <option> Choisir des producteurs </option>
+                        {
+                            personnesList.map(
+                                ({nom,prenom,id}) => (
+                                    <option
+                                        selected={film.producteur?.includes(id)}
+                                        value={id}
+                                    >
+                                        {nom} {prenom}
+                                    </option>
+                                ),
+                            )
+                        }
+                    </select>
+                </label>
+                <div class="md:col-start-2 flex gap-4 mt-6">
+                    <button
+                        type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+                        >{id ? "Mettre à jour" : "Ajouter"}</button
+                    >
+                    <a
+                        href={id ? `/films/${id}-${slug(film.titre ?? "Inconnu")}` : "/films"}
+                        class="text-gray-600 hover:text-gray-800 font-semibold px-6 py-3 transition-colors"
+                    >
+                        Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
 </Layout>
