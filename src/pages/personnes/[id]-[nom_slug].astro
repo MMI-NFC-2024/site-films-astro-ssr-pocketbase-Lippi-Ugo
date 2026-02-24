@@ -78,12 +78,10 @@ const personne = await Astro.locals.pb
                                 </p>
                                 <p class="text-slate-900 font-medium">
                                     {formatDateLong(personne.date_naissance)}
+                                    {!personne.date_deces && (
+                                        <span class="text-blue-600 text-sm ml-2">({calculerAge(personne.date_naissance)} ans)</span>
+                                    )}
                                 </p>
-                                {!personne.date_deces && (
-                                    <p class="text-blue-600 text-sm mt-1">
-                                        {calculerAge(personne.date_naissance)} ans
-                                    </p>
-                                )}
                             </div>
                         )
                     }
@@ -96,12 +94,10 @@ const personne = await Astro.locals.pb
                                 </p>
                                 <p class="text-slate-900 font-medium">
                                     {formatDateLong(personne.date_deces)}
+                                    {personne.date_naissance && (
+                                        <span class="text-blue-600 text-sm ml-2">({calculerAge(personne.date_naissance, personne.date_deces)} ans)</span>
+                                    )}
                                 </p>
-                                {personne.date_naissance && (
-                                    <p class="text-blue-600 text-sm mt-1">
-                                        {calculerAge(personne.date_naissance, personne.date_deces)} ans
-                                    </p>
-                                )}
                             </div>
                         )
                     }

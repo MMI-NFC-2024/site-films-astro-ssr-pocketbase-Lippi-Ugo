@@ -2,6 +2,7 @@
 import slug from "slug";
 import { formatDate } from "../../../helpers";
 import Layout from "../../../layouts/Layout.astro";
+import ImgPb from "../../../components/ImgPb.astro";
 import type { FilmResponse } from "../../../pocketbase-types";
 import {
     FilmPaysOrigineOptions,
@@ -40,7 +41,7 @@ if (Astro.request.method === "POST") {
 <Layout titre="Édition d'un film">
     <h1 class="text-4xl mb-12 text-gray-900">Ajouter un nouveau film</h1>
     {message && <p class="text-red-600">{message}</p>}
-    <form method="post" class="*:contents grid grid-cols-[10rem_1fr]">
+    <form method="post" enctype="multipart/form-data" class="*:contents grid grid-cols-[10rem_1fr]">
         {id && <input name="id" type="hidden" value={id} />}
         <input
             name="user"
@@ -87,6 +88,28 @@ if (Astro.request.method === "POST") {
                 value={film.duree_min}
             />
         </label>
+        <label class="block">
+            <span class="text-gray-700">Affiche :</span>
+            <input
+                name="affiche"
+                type="file"
+                class="mt-1 block w-full"
+            />
+            {id && film.affiche && (
+                <div class="mt-4">
+                    <p class="text-sm text-slate-600 mb-2">Affiche actuelle :</p>
+                    <div class="w-48">
+                        <ImgPb
+                            record={film}
+                            field="affiche"
+                            classPicture="w-full h-full"
+                            classImg="w-full h-auto rounded-lg shadow-md"
+                            thumb="400x600"
+                        />
+                    </div>
+                </div>
+            )}
+        </label>
         <fieldset class="col-span-2 block!">
             <legend class="text-gray-700">Genres :</legend>
             {
@@ -103,10 +126,6 @@ if (Astro.request.method === "POST") {
                 ))
             }
         </fieldset>
-        <!-- <label class="block">
-            <span class="text-gray-700">Photo :</span>
-            <input name="photo" type="" class="mt-1 block w-full" placeholder="">
-        </label> -->
         <label>
             <span class="text-gray-700">Pays d'origine :</span>
             <select name="pays_origine" class="mt-1 block">
