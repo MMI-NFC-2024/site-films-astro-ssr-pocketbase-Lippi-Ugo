@@ -5,14 +5,19 @@ import tailwindcss from '@tailwindcss/vite';
 
 import node from '@astrojs/node';
 
+import vue from '@astrojs/vue';
+
 // https://astro.build/config
 export default defineConfig({
   output: 'server',
+
   vite: {
     plugins: [tailwindcss()]
   },
 
   adapter: node({
     mode: 'standalone'
-  })
+  }),
+
+  integrations: [vue()]
 });
