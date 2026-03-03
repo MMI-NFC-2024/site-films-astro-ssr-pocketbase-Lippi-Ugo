@@ -1,0 +1,101 @@
+---
+import slug from "slug";
+import Layout from "../../../layouts/Layout.astro";
+import type { FilmResponse, RoleResponse } from "../../../pocketbase-types";
+
+export const prerender = false;
+
+const { idFilm } = Astro.params;
+
+if (!idFilm) {
+    return Astro.redirect("/films");
+}
+
+const personnesList = await Astro.locals.pb
+    .collection("Personne")
+    .getFullList({
+        sort: "nom",
+    });
+
+let message = "";
+let role = {} as RoleResponse;
+let film = {} as FilmResponse;
+
+if (idFilm) {
+    film = await Astro.locals.pb.collection("Film").getOne<FilmResponse>(idFilm);
+}
+
+if (Astro.request.method === "POST") {
+    const data = await Astro.request.formData();
+    const roleCree = await Astro.locals.pb
+        .collection("Role")
+        .create(data)
+        .catch((error) => {
+            console.error("Erreur lors de la création du rôle :", error);
+            message = error.message;
+        });
+    if (roleCree) {
+        return Astro.redirect(
+            `/films/${film.id}-${slug(film.titre ?? "Inconnu")}`,
+        );
+    }
+}
+---
+
+<Layout titre="Édition d'un rôle">
+    <div class="max-w-4xl mx-auto py-8 px-4">
+        <h1 class="text-4xl font-bold mb-8 text-gray-900">Ajouter un rôle</h1>
+        {message && <p class="text-red-600 mb-4 bg-red-50 border border-red-200 rounded-lg p-4">{message}</p>}
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <form method="post" class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-x-6 gap-y-4">
+                <input name="film" type="hidden" value={idFilm} />
+                <input
+                    name="user"
+                    type="hidden"
+                    value={Astro.locals.pb.authStore.record?.id}
+                />
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Nom du rôle :</span>
+                    <input
+                        name="nom"
+                        type="text"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder="Ex: James Bond, Indiana Jones..."
+                        value={role.nom}
+                    />
+                </label>
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Acteur/Actrice :</span>
+                    <select name="acteur" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                        <option> Choisir un acteur </option>
+                        {
+                            personnesList.map(
+                                ({nom,prenom,id}) => (
+                                    <option
+                                        selected={role.acteur === id}
+                                        value={id}
+                                    >
+                                        {prenom} {nom}
+                                    </option>
+                                ),
+                            )
+                        }
+                    </select>
+                </label>
+                <div class="md:col-start-2 flex gap-4 mt-6">
+                    <button
+                        type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+                        >Ajouter</button
+                    >
+                    <a
+                        href={`/films/${film.id}-${slug(film.titre ?? "Inconnu")}`}
+                        class="inline-flex items-center gap-2 bg-slate-600 hover:bg-slate-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+                    >
+                        Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</Layout>

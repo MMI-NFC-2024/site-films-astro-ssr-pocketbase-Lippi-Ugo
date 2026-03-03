@@ -1,0 +1,233 @@
+---
+import slug from "slug";
+import { formatDate } from "../../../helpers";
+import Layout from "../../../layouts/Layout.astro";
+import ImgPb from "../../../components/ImgPb.astro";
+import type { FilmResponse } from "../../../pocketbase-types";
+import {
+    FilmPaysOrigineOptions,
+    FilmGenresOptions,
+} from "../../../pocketbase-types";
+import SelectPersonne from "../../../components/SelectPersonne.vue";
+const { id } = Astro.params;
+const personnesList = await Astro.locals.pb
+    .collection("Personne")
+    .getFullList({
+        sort: "nom",
+    });
+let message = "";
+let film = {} as FilmResponse;
+if (id) {
+    film = await Astro.locals.pb.collection("Film").getOne(id);
+}
+if (Astro.request.method === "POST") {
+    const data = await Astro.request.formData();
+
+    const afficheFile = data.get("affiche") as File;
+    if (afficheFile && afficheFile.size === 0) {
+        data.delete("affiche");
+    }
+    const filmCree = await (id
+        ? Astro.locals.pb.collection("Film").update(id!, data)
+        : Astro.locals.pb
+              .collection("Film")
+              .create(data)
+              .catch((error) => {
+                  console.error("Erreur lors de la création du film :", error);
+                  message = error.message;
+              }));
+    if (filmCree) {
+        return Astro.redirect(
+            `/films/${filmCree.id}-${slug(filmCree.titre ?? "Inconnu")}`,
+        );
+    }
+}
+---
+
+<Layout titre="Édition d'un film">
+    <div class="max-w-4xl mx-auto py-8 px-4">
+        <h1 class="text-4xl font-bold mb-8 text-gray-900">{id ? "Édition d'un film" : "Ajout d'un film"}</h1>
+        {message && <p class="text-red-600 mb-4 bg-red-50 border border-red-200 rounded-lg p-4">{message}</p>}
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <form method="post" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-x-6 gap-y-4">
+                {id && <input name="id" type="hidden" value={id} />}
+                <input
+                    name="user"
+                    type="hidden"
+                    value={Astro.locals.pb.authStore.record?.id}
+                />
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Titre :</span>
+                    <input
+                        name="titre"
+                        type="text"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder=""
+                        value={film.titre}
+                    />
+                </label>
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Synopsis :</span>
+                    <input
+                        name="synopsis"
+                        type="text"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder=""
+                        value={film.synopsis}
+                    />
+                </label>
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Date de sortie :</span>
+                    <input
+                        name="date_sortie"
+                        type="date"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder=""
+                        value={formatDate(film.date_sortie)}
+                    />
+                </label>
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Durée (min) :</span>
+                    <input
+                        name="duree_min"
+                        type="number"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        placeholder=""
+                        value={film.duree_min}
+                    />
+                </label>
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Affiche :</span>
+                    <div>
+                        <input
+                            name="affiche"
+                            type="file"
+                            class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        />
+                        {id && film.affiche && (
+                            <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-600 mb-2 font-medium">Affiche actuelle :</p>
+                                <div class="w-48">
+                                    <ImgPb
+                                        record={film}
+                                        field="affiche"
+                                        classPicture="w-full h-full"
+                                        classImg="w-full h-auto rounded-lg shadow-md"
+                                        thumb="400x600"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </label>
+                <div class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Genres :</span>
+                    <div class="grid grid-cols-2 gap-3">
+                        {
+                            Object.entries(FilmGenresOptions).map(([key, value]) => (
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        name="genres"
+                                        value={value}
+                                        checked={film.genres?.includes(value)}
+                                        class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    <span class="text-gray-700">{key}</span>
+                                </label>
+                            ))
+                        }
+                    </div>
+                </div>
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Pays d'origine :</span>
+                    <select name="pays_origine" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                        <option> Choisir un pays d'origine </option>
+                        {
+                            Object.entries(FilmPaysOrigineOptions).map(
+                                ([key, value]) => (
+                                    <option
+                                        selected={film.pays_origine === key}
+                                        value={key}
+                                    >
+                                        {value}
+                                    </option>
+                                ),
+                            )
+                        }
+                    </select>
+                </label>
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Réalisateur :</span>
+                    <SelectPersonne personnes={personnesList} name="realisateur" value={film.realisateur} placeholder="Choisissez un réalisateur" client:load/>
+                    <!-- <select name="realisateur" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                        <option> Choisir un réalisateur </option>
+                        {
+                            personnesList.map(
+                                ({nom,prenom,id}) => (
+                                    <option
+                                        selected={film.realisateur === id}
+                                        value={id}
+                                    >
+                                        {prenom} {nom}
+                                    </option>
+                                ),
+                            )
+                        }
+                    </select> -->
+                </label>
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Producteur(s) :</span>
+                    <SelectPersonne personnes={personnesList} name="producteur" value={film.producteur} multiple placeholder="Choisissez un ou des producteur(s)" client:load/>
+                    <!-- <select name="producteur" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all min-h-30" multiple>
+                        <option> Choisir des producteurs </option>
+                        {
+                            personnesList.map(
+                                ({nom,prenom,id}) => (
+                                    <option
+                                        selected={film.producteur?.includes(id)}
+                                        value={id}
+                                    >
+                                        {prenom} {nom}
+                                    </option>
+                                ),
+                            )
+                        }
+                    </select> -->
+                </label>
+                <label class="contents">
+                    <span class="font-semibold text-gray-700 md:text-right md:pt-2">Scénariste(s) :</span>
+                    <SelectPersonne personnes={personnesList} name="scenariste" value={film.scenariste} multiple placeholder="Choisissez un ou des scénariste(s)" client:load/>
+                    <!-- <select name="scenariste" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all min-h-30" multiple>
+                        <option> Choisir des scénaristes </option>
+                        {
+                            personnesList.map(
+                                ({nom,prenom,id}) => (
+                                    <option
+                                        selected={film.scenariste?.includes(id)}
+                                        value={id}
+                                    >
+                                        {prenom} {nom}
+                                    </option>
+                                ),
+                            )
+                        }
+                    </select> -->
+                </label>
+                <div class="md:col-start-2 flex gap-4 mt-6">
+                    <button
+                        type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+                        >{id ? "Mettre à jour" : "Ajouter"}</button
+                    >
+                    <a
+                        href={id ? `/films/${id}-${slug(film.titre ?? "Inconnu")}` : "/films"}
+                        class="inline-flex items-center gap-2 bg-slate-600 hover:bg-slate-700 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all"
+                    >
+                        Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</Layout>
