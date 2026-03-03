@@ -3,7 +3,7 @@ import { defineConfig } from 'astro/config';
 
 import tailwindcss from '@tailwindcss/vite';
 
-import node from '@astrojs/node';
+import netlify from '@astrojs/netlify';
 
 import vue from '@astrojs/vue';
 
@@ -15,9 +15,7 @@ export default defineConfig({
     plugins: [tailwindcss()]
   },
 
-  adapter: node({
-    mode: 'standalone'
-  }),
+  adapter: netlify(),
 
   integrations: [vue()]
 });

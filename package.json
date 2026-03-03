@@ -10,6 +10,7 @@
     "typegen": "npx pocketbase-typegen --db ./pocketbase/pb_data/data.db --out src/pocketbase-types.ts"
   },
   "dependencies": {
+    "@astrojs/netlify": "^6.6.4",
     "@astrojs/node": "^9.5.4",
     "@astrojs/vue": "^5.1.4",
     "@tailwindcss/vite": "^4.1.18",
