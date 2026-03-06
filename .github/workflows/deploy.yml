@@ -33,7 +33,7 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 22006
         source: "dist/*"
-        target: "/var/www/cinematheque/"
+        target: "/var/www/site_film/"
         strip_components: 1
         rm: false
         overwrite: true
@@ -46,7 +46,7 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 22006
         script: |
-          cd /var/www/cinematheque/server
+          cd /var/www/site_film/server
           npm ci
           npm install astro
           npm install send server-destroy
