@@ -7,6 +7,8 @@ import netlify from '@astrojs/netlify';
 
 import vue from '@astrojs/vue';
 
+import node from '@astrojs/node';
+
 // https://astro.build/config
 export default defineConfig({
   output: 'server',
@@ -15,7 +17,9 @@ export default defineConfig({
     plugins: [tailwindcss()]
   },
 
-  adapter: netlify(),
+  adapter: node({
+    mode: 'standalone'
+  }),
 
   integrations: [vue()]
 });
