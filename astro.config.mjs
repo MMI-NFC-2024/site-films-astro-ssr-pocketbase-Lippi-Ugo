@@ -17,9 +17,7 @@ export default defineConfig({
     plugins: [tailwindcss()]
   },
 
-  adapter: node({
-    mode: 'standalone'
-  }),
+  adapter: netlify(),
 
   integrations: [vue()]
 });
